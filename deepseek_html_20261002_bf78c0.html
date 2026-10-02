@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Department of Estate Management — Anonymous Secrets</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          obsidian: '#0B0B0B',
+          bone: '#F4F1EA',
+          red: '#D32F2F',
+          gold: '#E8C93A',
+          bronze: '#8C6239',
+        },
+        fontFamily: {
+          display: ['Anton', 'sans-serif'],
+          mono: ['"Space Mono"', 'monospace'],
+          body: ['Inter', 'sans-serif'],
+          hand: ['Caveat', 'cursive'],
+        },
+        letterSpacing: { widest2: '.28em' },
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0B0B0B;
+    color: #F4F1EA;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ---- Animated background ---- */
+  .bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(211,47,47,0.15) 0%, transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(232,201,58,0.10) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0B0B0B 70%);
+    animation: bgShift 20s ease-in-out infinite;
+  }
+  @keyframes bgShift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(20deg); }
+  }
+
+  /* ---- Floating particles ---- */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(232,201,58,0.15);
+    filter: blur(2px);
+    animation: floatParticle linear infinite;
+  }
+  @keyframes floatParticle {
+    0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-120vh) translateX(30px) scale(0.4); opacity: 0; }
+  }
+
+  /* ---- Grain overlay ---- */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---- Scanlines ---- */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.08;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 3px,
+      rgba(0,0,0,0.5) 4px
+    );
+  }
+
+  /* ---- Intro screen ---- */
+  .intro {
+    position: relative;
+    z-index: 5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .intro.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  .dept-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: #D32F2F;
+    border: 1px solid rgba(211,47,47,0.4);
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    margin-bottom: 2rem;
+    animation: fadeIn 1s ease 0.2s both;
+  }
+
+  .intro-title {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(2.5rem, 9vw, 6rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem 0;
+    text-shadow: 0 0 60px rgba(211,47,47,0.3);
+    animation: fadeIn 1s ease 0.4s both;
+  }
+
+  .intro-title .red { color: #D32F2F; }
+
+  .intro-sub {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: rgba(244,241,234,0.6);
+    margin-bottom: 3rem;
+    animation: fadeIn 1s ease 0.6s both;
+  }
+
+  .intro-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    background: #D32F2F;
+    color: #F4F1EA;
+    border: none;
+    padding: 1.2rem 2.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s cubic-bezier(0.16, 0.8, 0.24, 1);
+    box-shadow: 0 0 0 rgba(211,47,47,0);
+    animation: fadeIn 1s ease 0.8s both;
+  }
+  .intro-button:hover {
+    background: #F4F1EA;
+    color: #0B0B0B;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(211,47,47,0.4);
+  }
+  .intro-button:active { transform: translateY(0); }
+
+  .intro-button::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid rgba(211,47,47,0.3);
+    border-radius: 6px;
+    animation: pulseRing 2.5s ease-in-out infinite;
+  }
+  @keyframes pulseRing {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.02); }
+  }
+
+  .intro-hint {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(244,241,234,0.25);
+    margin-top: 2rem;
+    animation: fadeIn 1s ease 1s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Gossip display ---- */
+  .gossip-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+  .gossip-stage.active {
+    display: flex;
+  }
+
+  .gossip-card {
+    max-width: 720px;
+    width: 100%;
+    opacity: 0;
+    transform: scale(0.85) translateY(30px);
+    transition: opacity 0.9s cubic-bezier(0.16, 0.8, 0.24, 1),
+                transform 0.9s cubic-bezier(0.16, 0.8, 0.24, 1);
+  }
+
+  /* Visible state */
+  .gossip-card.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .gossip-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(211,47,47,0.7);
+    margin-bottom: 1.5rem;
+  }
+
+  .gossip-text {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    line-height: 1.3;
+    color: #F4F1EA;
+    margin: 0;
+    text-shadow: 0 0 40px rgba(244,241,234,0.15);
+  }
+
+  .gossip-text::before {
+    content: '"';
+    display: block;
+    font-family: 'Anton', sans-serif;
+    font-size: 4rem;
+    line-height: 0.5;
+    color: rgba(232,201,58,0.3);
+    margin-bottom: 1rem;
+  }
+  .gossip-text::after {
+    content: '"';
+    display: block;
+    font-family: 'Anton', sans-serif;
+    font-size: 4rem;
+    line-height: 0.5;
+    color: rgba(232,201,58,0.3);
+    margin-top: 0.5rem;
+  }
+
+  .gossip-decoration {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #D32F2F, transparent);
+    margin: 2rem auto 0;
+  }
+
+  /* ---- Controls ---- */
+  .controls {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: none;
+    gap: 1rem;
+    align-items: center;
+  }
+  .controls.active { display: flex; }
+
+  .control-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: rgba(244,241,234,0.05);
+    color: rgba(244,241,234,0.6);
+    border: 1px solid rgba(244,241,234,0.15);
+    padding: 0.7rem 1.4rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+  }
+  .control-btn:hover {
+    background: rgba(244,241,234,0.1);
+    color: #F4F1EA;
+    border-color: rgba(244,241,234,0.3);
+  }
+
+  /* ---- Progress dots ---- */
+  .progress-dots {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(244,241,234,0.15);
+    transition: all 0.4s ease;
+  }
+  .dot.active {
+    background: #D32F2F;
+    transform: scale(1.4);
+    box-shadow: 0 0 10px rgba(211,47,47,0.6);
+  }
+
+  /* ---- Timeout warning banner ---- */
+  .warning-banner {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 50;
+    background: rgba(211,47,47,0.9);
+    color: #F4F1EA;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.8rem 2rem;
+    border-radius: 999px;
+    transition: transform 0.5s cubic-bezier(0.16, 0.8, 0.24, 1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .warning-banner.visible {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 640px) {
+    .intro-title { font-size: clamp(2rem, 11vw, 3.5rem); }
+    .gossip-text { font-size: clamp(1.3rem, 6vw, 1.9rem); }
+    .controls { bottom: 1rem; gap: 0.5rem; }
+    .control-btn { padding: 0.6rem 1rem; font-size: 0.55rem; }
+  }
+</style>
+</head>
+
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-scene" id="bgScene"></div>
+  <div class="grain"></div>
+  <div class="scanlines"></div>
+
+  <!-- ============ INTRO SCREEN ============ -->
+  <div class="intro" id="introScreen">
+    <div class="dept-badge">Department of Estate Management</div>
+    <h1 class="intro-title">
+      Anonymous<br />
+      <span class="red">Confessions</span>
+    </h1>
+    <p class="intro-sub">Picnic &amp; Movie Night Edition</p>
+
+    <button class="intro-button" id="viewSecretsBtn">
+      <span>🔓</span>
+      <span>View Secrets</span>
+    </button>
+
+    <p class="intro-hint">Tap to reveal. Sit back. Enjoy the show.</p>
+  </div>
+
+  <!-- ============ GOSSIP DISPLAY ============ -->
+  <div class="gossip-stage" id="gossipStage">
+    <div class="gossip-card" id="gossipCard">
+      <div class="gossip-number" id="gossipNumber">Secret #01</div>
+      <p class="gossip-text" id="gossipText">Loading...</p>
+      <div class="gossip-decoration"></div>
+    </div>
+  </div>
+
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls" id="controls">
+    <button class="control-btn" id="prevBtn">← Prev</button>
+    <div class="progress-dots" id="dotsContainer"></div>
+    <button class="control-btn" id="nextBtn">Next →</button>
+    <button class="control-btn" id="pauseBtn">⏸ Pause</button>
+  </div>
+
+  <!-- ============ WARNING BANNER ============ -->
+  <div class="warning-banner" id="warningBanner">Slow down 😅 — you're going too fast</div>
+
+  <script>
+    // ================================================================
+    // 🍿 GOSSIP DATA – REPLACE THESE WITH YOUR ACTUAL TEXTS
+    // ================================================================
+    const GOSSIP = [
+      "Someone in this department has been secretly dating two people at the same time — and they both showed up to the picnic wearing matching shirts 😳",
+      "That quiet class rep of ours? They got caught printing 40 pages of their ex's WhatsApp chats in the library last week 💀",
+      "One of the lecturers has a favorite student and it's not because of the grades 👀",
+      "Someone in this room has been lying about their CGPA since 200 level. The real one? Let's just say it rhymes with 'B average' 😭",
+      "The person who 'found' the missing projector cable at the last group meeting is the same person who hid it. We see you 🫵",
+      "A certain someone got rejected at the last class party and cried in the toilet for 20 minutes. The toilet knows. The toilet always knows 🚽",
+      "Someone here has been screenshotting the department WhatsApp group and forwarding to their other group chat. We know who you are 👁️",
+      "One of us has been telling people they 'study all night' but their Duolingo streak is currently on day 400 for a language they don't even speak 🦉",
+      "That group project that 'everyone contributed equally'? Only one person did the work — and they're sitting in this room right now 😤",
+      "Someone in this department has a secret TikTok account with 12k followers. What if I told you it's the person you'd least expect 💅",
+      "The person who 'accidentally' sent a message to the wrong group chat at 3am is sitting right here. They know. We know. Everybody knows 🕵️",
+      "A certain final year student has been claiming they have 'one more semester' since 2022. Bro, it's time to graduate 📜",
+    ];
+
+    // ================================================================
+    // ⏱️ TIMING SETTINGS – CHANGE THESE TO ADJUST THE SHOW
+    // ================================================================
+    const SETTINGS = {
+      displayDuration: 10000,   // How long each gossip stays visible (ms) = 10 seconds
+      pauseDuration: 3500,      // Pause between gossip items (ms) = 3.5 seconds
+      fadeInDuration: 900,      // Fade in time (ms) = 0.9 seconds
+      fadeOutDuration: 900,     // Fade out time (ms) = 0.9 seconds
+    };
+
+    // ================================================================
+    // 🎬 SCRIPT – YOU DON'T NEED TO CHANGE ANYTHING BELOW
+    // ================================================================
+
+    let currentIndex = 0;
+    let isPaused = false;
+    let timer = null;
+    let isRunning = false;
+
+    const introScreen = document.getElementById('introScreen');
+    const gossipStage = document.getElementById('gossipStage');
+    const gossipCard = document.getElementById('gossipCard');
+    const gossipText = document.getElementById('gossipText');
+    const gossipNumber = document.getElementById('gossipNumber');
+    const controls = document.getElementById('controls');
+    const viewSecretsBtn = document.getElementById('viewSecretsBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const warningBanner = document.getElementById('warningBanner');
+
+    // ---- Build progress dots ----
+    function buildDots() {
+      dotsContainer.innerHTML = '';
+      GOSSIP.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.dataset.index = i;
+        dot.addEventListener('click', () => goTo(i));
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    // ---- Update active dot ----
+    function updateDots() {
+      document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    // ---- Show current gossip ----
+    function showGossip() {
+      const text = GOSSIP[currentIndex];
+      const num = String(currentIndex + 1).padStart(2, '0');
+
+      // Fade out first
+      gossipCard.classList.remove('visible');
+
+      setTimeout(() => {
+        gossipText.textContent = text;
+        gossipNumber.textContent = 'Secret #' + num;
+
+        // Fade in
+        setTimeout(() => {
+          gossipCard.classList.add('visible');
+        }, 60);
+
+        updateDots();
+
+        // Schedule the fade out and next one
+        if (isRunning && !isPaused) {
+          timer = setTimeout(() => {
+            gossipCard.classList.remove('visible');
+            timer = setTimeout(() => {
+              if (isRunning && !isPaused) {
+                currentIndex = (currentIndex + 1) % GOSSIP.length;
+                showGossip();
+              }
+            }, SETTINGS.pauseDuration);
+          }, SETTINGS.displayDuration);
+        }
+      }, SETTINGS.fadeOutDuration);
+    }
+
+    // ---- Jump to specific index ----
+    function goTo(index) {
+      if (isPaused) {
+        // allow jump even when paused, but don't auto-advance
+      }
+      clearTimeout(timer);
+      currentIndex = ((index % GOSSIP.length) + GOSSIP.length) % GOSSIP.length;
+      showGossip();
+    }
+
+    // ---- Next / Prev ----
+    function next() {
+      clearTimeout(timer);
+      currentIndex = (currentIndex + 1) % GOSSIP.length;
+      showGossip();
+    }
+    function prev() {
+      clearTimeout(timer);
+      currentIndex = (currentIndex - 1 + GOSSIP.length) % GOSSIP.length;
+      showGossip();
+    }
+
+    // ---- Pause / Resume ----
+    function togglePause() {
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? '▶ Resume' : '⏸ Pause';
+      if (!isPaused && isRunning) {
+        // Resume the loop
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          gossipCard.classList.remove('visible');
+          timer = setTimeout(() => {
+            if (isRunning && !isPaused) {
+              currentIndex = (currentIndex + 1) % GOSSIP.length;
+              showGossip();
+            }
+          }, SETTINGS.pauseDuration);
+        }, SETTINGS.displayDuration);
+      } else if (isPaused) {
+        clearTimeout(timer);
+      }
+    }
+
+    // ---- Start the show ----
+    function startShow() {
+      introScreen.classList.add('hidden');
+      setTimeout(() => {
+        gossipStage.classList.add('active');
+        controls.classList.add('active');
+        isRunning = true;
+        currentIndex = 0;
+        buildDots();
+        showGossip();
+      }, 400);
+    }
+
+    // ---- Event listeners ----
+    viewSecretsBtn.addEventListener('click', startShow);
+    nextBtn.addEventListener('click', next);
+    prevBtn.addEventListener('click', prev);
+    pauseBtn.addEventListener('click', togglePause);
+
+    // ---- Keyboard shortcuts ----
+    document.addEventListener('keydown', (e) => {
+      if (!isRunning) return;
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === ' ') { e.preventDefault(); togglePause(); }
+      if (e.key === 'Escape') {
+        isRunning = false;
+        clearTimeout(timer);
+        gossipStage.classList.remove('active');
+        controls.classList.remove('active');
+        introScreen.classList.remove('hidden');
+      }
+    });
+
+    // ---- Floating particles ----
+    (function spawnParticles() {
+      const bg = document.getElementById('bgScene');
+      const count = 25;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = 2 + Math.random() * 6;
+        p.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          top: ${100 + Math.random() * 30}%;
+          animation-duration: ${12 + Math.random() * 20}s;
+          animation-delay: ${Math.random() * 15}s;
+          opacity: ${0.1 + Math.random() * 0.4};
+        `;
+        bg.appendChild(p);
+      }
+    })();
+
+    // ---- Prevent accidental double-click zoom on mobile ----
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+  </script>
+
+</body>
+</html>
